@@ -7,7 +7,7 @@ public abstract class GuiScreen extends Gui {
 	
 	public abstract void start();
 	
-	public abstract void update();
+	public abstract void update(int tick);
 	
 	public abstract void render();
 	

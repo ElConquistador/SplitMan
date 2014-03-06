@@ -32,7 +32,7 @@ public class SplitMan implements Runnable {
 		System.out.println("SplitMan starting...");
 		try {
 			Display.setDisplayMode(new DisplayMode(WIDTH, HEIGHT));
-			Display.setResizable(true);
+			Display.setResizable(false);
 			Display.setVSyncEnabled(true);
 			Display.setTitle("SplitMan");
 			Display.create();
@@ -69,7 +69,7 @@ public class SplitMan implements Runnable {
 			delta += (now - lastTime) / NANOSECS;
 			lastTime = now;
 			while(delta >= 1) {
-				update();
+				update(updates);
 				updates++;
 				delta--;
 			}
@@ -86,9 +86,9 @@ public class SplitMan implements Runnable {
 		stop();
 	}
 
-	public void update() {
+	public void update(int tick) {
 		if(currentScreen != null) {
-			currentScreen.update();
+			currentScreen.update(tick);
 		}
 	}
 	
