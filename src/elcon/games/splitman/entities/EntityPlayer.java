@@ -16,7 +16,9 @@ public class EntityPlayer extends Entity {
 		super(world, x, y);
 		this.color = color;
 		
-		speed = 4.0;
+		sizeX = 32;
+		sizeY = 64;
+		speed = 8.0;
 	}
 	
 	@Override
@@ -29,17 +31,19 @@ public class EntityPlayer extends Entity {
 		} else {
 			velocity.setX(0);
 		}
+		if(Settings.jump.isPressed()) { //&& onGround) {
+			velocity.setY(-speed);
+		}
 	}
 	
 	@Override
 	public void render() {
-		GL11.glColor4f(1.0F, 0.0F, 0.0F, 1.0F);
 		Util.color(COLORS[color]);
 		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2d(getX(), getY());
-		GL11.glVertex2d(getX() + 32, getY());
-		GL11.glVertex2d(getX() + 32, getY() + 64);
-		GL11.glVertex2d(getX(), getY() + 64);
+		GL11.glVertex2d(-world.offsetX + getX(), -world.offsetY + getY());
+		GL11.glVertex2d(-world.offsetX + getX() + sizeX, -world.offsetY + getY());
+		GL11.glVertex2d(-world.offsetX + getX() + sizeX, -world.offsetY + getY() + sizeY);
+		GL11.glVertex2d(-world.offsetX + getX(), -world.offsetY + getY() + sizeY);
 		GL11.glEnd();
 	}
 }

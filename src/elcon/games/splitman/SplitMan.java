@@ -82,6 +82,7 @@ public class SplitMan implements Runnable {
 				updates = 0;
 			}			
 			Display.update();
+			Display.sync(120);
 		}
 		stop();
 	}

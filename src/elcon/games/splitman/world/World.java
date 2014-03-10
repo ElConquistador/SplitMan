@@ -3,6 +3,8 @@ package elcon.games.splitman.world;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.lwjgl.input.Keyboard;
+
 import elcon.games.splitman.SplitMan;
 import elcon.games.splitman.entities.Entity;
 import elcon.games.splitman.entities.EntityPlayer;
@@ -60,6 +62,16 @@ public class World {
 				}
 			}
 		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
+			setOffsetX(offsetX - 8);
+		} else if(Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
+			setOffsetX(offsetX + 8);
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_UP)) {
+			setOffsetY(offsetY - 8);
+		} else if(Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
+			setOffsetY(offsetY + 8);
+		}
 	}
 	
 	public void render() {
@@ -82,14 +94,18 @@ public class World {
 	}
 	
 	public void setOffsetX(int offsetX) {
-		if(offsetX > sizeX * Tile.SIZE - SplitMan.WIDTH) {
+		if(offsetX < 0) {
+			offsetX = 0;
+		} else if(offsetX > sizeX * Tile.SIZE - SplitMan.WIDTH) {
 			offsetX = sizeX * Tile.SIZE - SplitMan.WIDTH;
 		}
 		this.offsetX = offsetX;
 	}
 
 	public void setOffsetY(int offsetY) {
-		if(offsetY > sizeY * Tile.SIZE - SplitMan.HEIGHT) {
+		if(offsetY < 0) {
+			offsetY = 0;
+		} else if(offsetY > sizeY * Tile.SIZE - SplitMan.HEIGHT) {
 			offsetY = sizeY * Tile.SIZE - SplitMan.HEIGHT;
 		}
 		this.offsetY = offsetY;
@@ -129,6 +145,16 @@ public class World {
 	
 	public void setTileMetadata(int x, int y, int tileMeta) {
 		tileMetadata[x + y * sizeX] = (byte) (tileMeta & 255);
+	}
+	
+	public void setTileAndMetadata(int x, int y, int tileID, int tileMeta) {
+		setTileID(x, y, tileID);
+		setTileMetadata(x, y, tileMeta);
+	}
+	
+	public void setTileAndMetadata(int x, int y, Tile tile, int tileMeta) {
+		setTile(x, y, tile);
+		setTileMetadata(x, y, tileMeta);
 	}
 	
 	public void addEntity(Entity entity) {

@@ -14,11 +14,15 @@ public class GuiGame extends GuiScreen {
 		for(int i = 0; i < world.sizeX; i++) {
 			for(int j = 0; j < world.sizeY; j++) {
 				if(i == 0 || i == world.sizeX - 1 || j == 0 || j == world.sizeY - 1) {
-					world.setTile(i, j, Tile.test);
-					world.setTileMetadata(i, j, world.random.nextInt(2));
+					world.setTileAndMetadata(i, j, Tile.test, world.random.nextInt(2));
 				}
 			}
 		}
+		world.setTileAndMetadata(16, 16, Tile.test, 0);
+		world.setTileAndMetadata(17, 16, Tile.test, 1);
+		world.setTileAndMetadata(18, 16, Tile.test, 0);
+		world.setTileAndMetadata(19, 16, Tile.test, 1);
+		world.setTileAndMetadata(20, 16, Tile.test, 0);
 		world.addPlayer(new EntityPlayer(world, 64, 64, 0));
 	}
 
