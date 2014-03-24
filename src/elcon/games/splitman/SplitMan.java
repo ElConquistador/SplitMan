@@ -9,6 +9,8 @@ import elcon.games.splitman.gui.GuiScreen;
 
 public class SplitMan implements Runnable {
 	
+	public static final boolean DEBUG = true;
+	
 	public static final int UPS = 30;
 	public static final double NANOSECS = 1000000000.0 / (double) UPS;
 	

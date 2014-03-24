@@ -1,190 +1,256 @@
 package elcon.games.splitman.entities;
 
+import java.util.ArrayList;
+
 import org.lwjgl.opengl.GL11;
 
+import elcon.games.splitman.SplitMan;
 import elcon.games.splitman.tiles.Tile;
 import elcon.games.splitman.util.BoundingBox;
-import elcon.games.splitman.util.Vector;
 import elcon.games.splitman.world.World;
 
 public class Entity {
 
 	public World world;
-	
-	public Vector position;
-	public Vector velocity;
-	public Vector gravity;
-	
+
+	public double x;
+	public double y;
+	public double vx;
+	public double vy;
+	public double gravity;
+
 	public double speed = 1.0;
-	
+
 	public int sizeX = Tile.SIZE;
 	public int sizeY = Tile.SIZE;
-	
+
 	public BoundingBox boundingBox;
-	
+
 	public boolean isDead = false;
+	public boolean noClip = false;
 	public boolean onGround = false;
-	
+	public boolean isFalling = false;
+	public boolean collisionX = false;
+	public boolean collisionY = false;
+
 	public Entity(World world) {
 		this.world = world;
 	}
-	
+
 	public Entity(World world, double x, double y) {
 		this(world);
-		position = new Vector(x, y);
-		velocity = new Vector(0, 0);
-		gravity = new Vector(0, 4);
+		this.x = x;
+		this.y = y;
+		gravity = 4;
 		boundingBox = new BoundingBox(x, x + sizeX, y, y + sizeY);
 	}
-	
+
 	public Entity(World world, double x, double y, double speed, double direction) {
 		this(world, x, y);
-		velocity.setLength(speed);
-		velocity.setAngle(direction);
+		setSpeed(speed);
+		setDirection(direction);
+	}
+
+	public void update() {
+		vy += gravity;
+		isFalling = vy > 0;
+		
+		if(!noClip) {
+			if(collisionX) {
+				collisionX = false;
+				collisionY = false;
+				collideX();
+				collideY();
+			} else if(collisionY) {
+				collisionX = false;
+				collisionY = false;
+				collideY();
+				collideX();
+			} else {
+				collideY();
+				collideX();
+			}
+		}	
+		
+		if(vy < 0) {
+			onGround = false;
+		}
+		if(isFalling && vy == 0) {
+			onGround = true;
+		}
+		x += vx;
+		y += vy;
+		boundingBox.minX = x;
+		boundingBox.maxX = x + sizeX;
+		boundingBox.minY = y;
+		boundingBox.maxY = y + sizeY;
+		
+		if(x < 0) {
+			x = 0;
+			vx = 0;
+			boundingBox.minX = x;
+			boundingBox.maxX = x + sizeX;
+		} else if(x > world.sizeX * Tile.SIZE - sizeX) {
+			x = world.sizeX * Tile.SIZE - sizeX;
+			vx = 0;
+			boundingBox.minX = x;
+			boundingBox.maxX = x + sizeX;
+		}
+		if(y < 0) {
+			y = 0;
+			vx = 0;
+			boundingBox.minY = y;
+			boundingBox.maxY = y + sizeY;
+		} else if(y > world.sizeY * Tile.SIZE - sizeY) {
+			y = world.sizeY * Tile.SIZE - sizeY;
+			vx = 0;
+			boundingBox.minY = y;
+			boundingBox.maxY = y + sizeY;
+		}
 	}
 	
-	public void update() {
-		velocity.addTo(gravity);
-		BoundingBox newBoundingBox = boundingBox.add(velocity);
-		if(velocity.getX() != 0 || velocity.getY() != 0) {
+	public void collideX() {
+		BoundingBox newBoundingBox = boundingBox.add(vx, vy);
+		if(vx != 0) {
 			boolean done = false;
-			//while(!done) {
-				int minBX = (int) ((getX() + velocity.getX()) / Tile.SIZE);
-				int maxBX = (int) ((getX() + velocity.getX() + sizeX - 1) / Tile.SIZE);
-				int minBY = (int) ((getY() + velocity.getY()) / Tile.SIZE);
-				int maxBY = (int) ((getY() + velocity.getY() + sizeY - 1) / Tile.SIZE);
-				double mx = velocity.getX();
-				double my = velocity.getY();
-				if(minBX < 0 || maxBX >= world.sizeX) {
-					mx = 0;
-					done = true;
-				}
-				if(minBY < 0 || maxBY >= world.sizeY) {
-					my = 0;
-					done = true;
-				}
-				if(!done) {
-					System.out.println(mx + " " + my);
-					BoundingBox box;
-					for(int x = velocity.getX() > 0 ? maxBX : minBX; velocity.getX() > 0 ? x >= minBX : x <= maxBX; x += (velocity.getX() > 0 ? -1 : 1)) {
-						for(int y = velocity.getY() > 0 ? maxBY : minBY; velocity.getY() > 0 ? y >= minBY : y <= maxBY; y += (velocity.getY() > 0 ? -1 : 1)) {
-							box = world.getTile(x, y).getBoundingBox(world, x, y);
+			int minBX = (int) ((x + vx) / Tile.SIZE);
+			int maxBX = (int) ((x + vx + sizeX - 1) / Tile.SIZE);
+			int minBY = (int) ((y + vy) / Tile.SIZE);
+			int maxBY = (int) ((y + vy + sizeY - 1) / Tile.SIZE);
+			double mx = vx;
+			double oldMX = mx;
+			if(minBX < 0 || maxBX >= world.sizeX) {
+				mx = 0;
+				done = true;
+			}
+			if(minBY < 0 || maxBY >= world.sizeY) {
+				vy = 0;
+				done = true;
+			}
+			if(!done) {
+				for(int x = vx > 0 ? maxBX : minBX; vx > 0 ? x >= minBX : x <= maxBX; x += (vx > 0 ? -1 : 1)) {
+					for(int y = vy > 0 ? maxBY : minBY; vy > 0 ? y >= minBY : y <= maxBY; y += (vy > 0 ? -1 : 1)) {
+						ArrayList<BoundingBox> list = new ArrayList<BoundingBox>();
+						world.getTile(x, y).addBoundingBoxesToList(world, x, y, list);
+						for(BoundingBox box : list) {
 							if(box != null && box.intersects(newBoundingBox)) {
-								System.out.println("intersect at " + x + ", " + y);
+								oldMX = mx;
 								if(mx < 0) {
-									
+									mx += Math.max(-mx, Math.min(Tile.SIZE, newBoundingBox.minX - box.maxX));
+									if(mx != oldMX) {
+										collisionX = true;
+									}
 								} else if(mx > 0) {
-									
-								}
-								if(my < 0) {
-									
-								} else if(my > 0) {
-									
+									mx -= Math.min(mx, Math.min(Tile.SIZE, newBoundingBox.maxX - box.minX));
+									if(mx != oldMX) {
+										collisionX = true;
+									}
 								}
 							}
 						}
 					}
-					done = true;
 				}
-				velocity.setX(mx);
-				velocity.setY(my);
-			//}
-		}
-		/*if(velocity.getX() < 0) {
-			
-		} else if(velocity.getX() > 0) {
-			
-		}
-		if(velocity.getY() < 0) {
-			int minBX = (int) (getX() / Tile.SIZE);
-			int maxBX = (int) ((getX() + sizeX - 1) / Tile.SIZE);
-			int blockY = (int) ((getY() + velocity.getY() - 1) / Tile.SIZE);
-			if(blockY < 0) {
-				velocity.setY(0);
-			} else {
-				int my = (int) velocity.getY();
-				BoundingBox box;
-				for(int i = minBX; i <= maxBX; i++) {
-					box = world.getTile(i, blockY).getBoundingBox(world, i, blockY);
-					if(box != null && box.intersects(newBoundingBox)) {
-						my = (int) Math.max(my, my - (newBoundingBox.minY - box.maxY));
-					}
-				}
-				velocity.setY(my);
+				done = true;
 			}
-		} else if(velocity.getY() > 0) {
-			int minBX = (int) (getX() / Tile.SIZE);
-			int maxBX = (int) ((getX() + sizeX - 1) / Tile.SIZE);
-			int blockY = (int) ((getY() + velocity.getY() - 1) / Tile.SIZE);
-			if(blockY >= world.sizeY) {
-				velocity.setY(0);
-			} else {
-				int my = (int) velocity.getY();
-				BoundingBox box;
-				for(int i = minBX; i <= maxBX; i++) {
-					box = world.getTile(i, blockY).getBoundingBox(world, i, blockY);
-					if(box != null && box.intersects(newBoundingBox)) {
-						System.out.println("intersect " + my + " | " + newBoundingBox.maxY + " | " + box.minY);
-						my = (int) Math.min(my, my - (newBoundingBox.maxY - box.minY));
-						System.out.println("    new: " + my);
-					}
-				}
-				velocity.setY(my);
-			}
-		}*/
-		position.addTo(velocity);
-		boundingBox.addTo(velocity);
-		if(getX() < 0) {
-			setX(0);
-			velocity.setX(0);
-			boundingBox.minX = getX();
-			boundingBox.maxX = getX() + sizeX;
-		} else if(getX() > world.sizeX * Tile.SIZE - sizeX) {
-			setX(world.sizeX * Tile.SIZE - sizeX);
-			velocity.setX(0);
-			boundingBox.minX = getX();
-			boundingBox.maxX = getX() + sizeX;
-		}
-		if(getY() < 0) {
-			setY(0);
-			velocity.setY(0);
-			boundingBox.minY = getY();
-			boundingBox.maxY = getY() + sizeY;
-		} else if(getY() > world.sizeY * Tile.SIZE - sizeY) {
-			setY(world.sizeY * Tile.SIZE - sizeY);
-			velocity.setY(0);
-			boundingBox.minY = getY();
-			boundingBox.maxY = getY() + sizeY;
+			vx = mx;
 		}
 	}
 	
+	public void collideY() {
+		BoundingBox newBoundingBox = boundingBox.add(vx, vy);
+		if(vy != 0) {
+			boolean done = false;
+			int minBX = (int) ((x + vx) / Tile.SIZE);
+			int maxBX = (int) ((x + vx + sizeX - 1) / Tile.SIZE);
+			int minBY = (int) ((y + vy) / Tile.SIZE);
+			int maxBY = (int) ((y + vy + sizeY - 1) / Tile.SIZE);
+			double my = vy;
+			double oldMY = my;
+			if(minBX < 0 || maxBX >= world.sizeX) {
+				vx = 0;
+				done = true;
+			}
+			if(minBY < 0 || maxBY >= world.sizeY) {
+				my = 0;
+				done = true;
+			}
+			if(!done) {
+				for(int x = vx > 0 ? maxBX : minBX; vx > 0 ? x >= minBX : x <= maxBX; x += (vx > 0 ? -1 : 1)) {
+					for(int y = vy > 0 ? maxBY : minBY; vy > 0 ? y >= minBY : y <= maxBY; y += (vy > 0 ? -1 : 1)) {
+						ArrayList<BoundingBox> list = new ArrayList<BoundingBox>();
+						world.getTile(x, y).addBoundingBoxesToList(world, x, y, list);
+						for(BoundingBox box : list) {
+							if(box != null && box.intersects(newBoundingBox)) {
+								oldMY = my;
+								if(my < 0) {
+									my += Math.max(-my, Math.min(Tile.SIZE, newBoundingBox.minY - box.maxY));
+									if(my != oldMY) {
+										collisionY = true;
+									}
+								} else if(my > 0) {
+									my -= Math.min(my, Math.min(Tile.SIZE, newBoundingBox.maxY - box.minY));
+									if(my != oldMY) {
+										collisionY = true;
+									}
+								}
+							}
+						}
+					}
+				}
+				done = true;
+			}
+			vy = my;
+		}
+	}
+
 	public void render() {
 		GL11.glColor4f(1.0F, 0.0F, 1.0F, 1.0F);
 		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2d(-world.offsetX + getX(), -world.offsetY + getY());
-		GL11.glVertex2d(-world.offsetX + getX() + sizeX, -world.offsetY + getY());
-		GL11.glVertex2d(-world.offsetX + getX() + sizeX, -world.offsetY + getY() + sizeY);
-		GL11.glVertex2d(-world.offsetX + getX(), -world.offsetY + getY() + sizeY);
+		GL11.glVertex2d(-world.offsetX + x, -world.offsetY + y);
+		GL11.glVertex2d(-world.offsetX + x + sizeX, -world.offsetY + y);
+		GL11.glVertex2d(-world.offsetX + x + sizeX, -world.offsetY + y + sizeY);
+		GL11.glVertex2d(-world.offsetX + x, -world.offsetY + y + sizeY);
 		GL11.glEnd();
+
+		if(SplitMan.DEBUG) {
+			GL11.glColor4f(0.75F, 0.0F, 0.75F, 1.0F);
+			GL11.glBegin(GL11.GL_QUADS);
+			GL11.glVertex2d(-world.offsetX + x + vx, -world.offsetY + y + vy);
+			GL11.glVertex2d(-world.offsetX + x + vx + sizeX, -world.offsetY + y + vy);
+			GL11.glVertex2d(-world.offsetX + x + vx + sizeX, -world.offsetY + y + vy + sizeY);
+			GL11.glVertex2d(-world.offsetX + x + vx, -world.offsetY + y + vy + sizeY);
+			GL11.glEnd();
+		}
 	}
-	
+
 	public void setDead() {
 		isDead = true;
 	}
-	
-	public double getX() {
-		return position.getX();
+
+	public void setSize(int sizeX, int sizeY) {
+		this.sizeX = sizeX;
+		this.sizeY = sizeY;
+		boundingBox = new BoundingBox(x, y, x + sizeX, y + sizeY);
 	}
-	
-	public void setX(double x) {
-		position.setX(x);
+
+	public double getSpeed() {
+		return Math.sqrt(vx * vx + vy * vy);
 	}
-	
-	public double getY() {
-		return position.getY();
+
+	public void setSpeed(double speed) {
+		double angle = Math.toRadians(getDirection());
+		vx = Math.cos(angle) * speed;
+		vy = Math.sin(angle) * speed;
 	}
-	
-	public void setY(double y) {
-		position.setY(y);
+
+	public double getDirection() {
+		return Math.atan2(vy, vx);
+	}
+
+	public void setDirection(double angle) {
+		angle = Math.toRadians(angle);
+		double length = getSpeed();
+		vx = Math.cos(angle) * length;
+		vy = Math.sin(angle) * length;
 	}
 }

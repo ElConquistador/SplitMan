@@ -1,6 +1,7 @@
 package elcon.games.splitman.world;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.lwjgl.input.Keyboard;
@@ -9,6 +10,7 @@ import elcon.games.splitman.SplitMan;
 import elcon.games.splitman.entities.Entity;
 import elcon.games.splitman.entities.EntityPlayer;
 import elcon.games.splitman.tiles.Tile;
+import elcon.games.splitman.util.BoundingBox;
 
 public class World {
 	
@@ -114,6 +116,10 @@ public class World {
 	public void setOffset(int offsetX, int offsetY) {
 		setOffsetX(offsetX);
 		setOffsetY(offsetY);
+	}
+	
+	public boolean isTile(int x, int y) {
+		return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
 	}
 	
 	public byte getTileID(int x, int y) {
