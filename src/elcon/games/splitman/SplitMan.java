@@ -9,8 +9,6 @@ import elcon.games.splitman.gui.GuiScreen;
 
 public class SplitMan implements Runnable {
 	
-	public static final boolean DEBUG = true;
-	
 	public static final int UPS = 30;
 	public static final double NANOSECS = 1000000000.0 / (double) UPS;
 	
@@ -51,6 +49,8 @@ public class SplitMan implements Runnable {
 		GL11.glLoadIdentity();
 		GL11.glOrtho(0, WIDTH, HEIGHT, 0, 1, -1);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		
+		Resources.load();
 		
 		setScreen(new GuiGame());
 		System.out.println("SplitMan started");

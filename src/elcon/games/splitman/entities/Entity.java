@@ -1,10 +1,11 @@
 package elcon.games.splitman.entities;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
-import elcon.games.splitman.SplitMan;
+import elcon.games.splitman.settings.Settings;
 import elcon.games.splitman.tiles.Tile;
 import elcon.games.splitman.util.BoundingBox;
 import elcon.games.splitman.world.World;
@@ -51,7 +52,7 @@ public class Entity {
 		setDirection(direction);
 	}
 
-	public void update() {
+	public void update(int tick) {
 		vy += gravity;
 		isFalling = vy > 0;
 		
@@ -128,32 +129,51 @@ public class Entity {
 				done = true;
 			}
 			if(!done) {
+				List<BoundingBox> boxes = new ArrayList<BoundingBox>();
 				for(int x = vx > 0 ? maxBX : minBX; vx > 0 ? x >= minBX : x <= maxBX; x += (vx > 0 ? -1 : 1)) {
 					for(int y = vy > 0 ? maxBY : minBY; vy > 0 ? y >= minBY : y <= maxBY; y += (vy > 0 ? -1 : 1)) {
-						ArrayList<BoundingBox> list = new ArrayList<BoundingBox>();
-						world.getTile(x, y).addBoundingBoxesToList(world, x, y, list);
-						for(BoundingBox box : list) {
+						boxes.clear();
+						world.getTile(x, y).addBoundingBoxesToList(world, x, y, boxes);
+						for(BoundingBox box : boxes) {
 							if(box != null && box.intersects(newBoundingBox)) {
 								oldMX = mx;
-								if(mx < 0) {
-									mx += Math.max(-mx, Math.min(Tile.SIZE, newBoundingBox.minX - box.maxX));
-									if(mx != oldMX) {
-										collisionX = true;
-									}
-								} else if(mx > 0) {
-									mx -= Math.min(mx, Math.min(Tile.SIZE, newBoundingBox.maxX - box.minX));
-									if(mx != oldMX) {
-										collisionX = true;
-									}
+								mx = collideX(newBoundingBox, box, mx);
+								if(mx != oldMX) {
+									collisionX = true;
+									onCollide(x, y);
+									world.getTile(x, y).onCollide(world, x, y, this);
 								}
 							}
 						}
 					}
 				}
-				done = true;
+				List<Entity> entities = world.getEntitiesInRange(getCenterX(), getCenterY(), Math.max(sizeX, sizeY));
+				entities.remove(this);
+				for(Entity entity : entities) {
+					if(entity.boundingBox != null && entity.boundingBox.intersects(newBoundingBox)) {
+						onCollide(entity);
+						entity.onCollide(this);
+						/*oldMX = mx;
+						mx = collideX(newBoundingBox, entity.boundingBox, mx);
+						if(mx != oldMX) {
+							collisionX = true;
+							onCollide(entity);
+							entity.onCollide(this);
+						}*/
+					}
+				}
 			}
 			vx = mx;
 		}
+	}
+	
+	public double collideX(BoundingBox box1, BoundingBox box2, double mx) {
+		if(mx < 0) {
+			mx += Math.max(-mx, Math.min(Tile.SIZE, box1.minX - box2.maxX));
+		} else if(mx > 0) {
+			mx -= Math.min(mx, Math.min(Tile.SIZE, box1.maxX - box2.minX));
+		}
+		return mx;
 	}
 	
 	public void collideY() {
@@ -175,32 +195,59 @@ public class Entity {
 				done = true;
 			}
 			if(!done) {
+				List<BoundingBox> boxes = new ArrayList<BoundingBox>();
 				for(int x = vx > 0 ? maxBX : minBX; vx > 0 ? x >= minBX : x <= maxBX; x += (vx > 0 ? -1 : 1)) {
 					for(int y = vy > 0 ? maxBY : minBY; vy > 0 ? y >= minBY : y <= maxBY; y += (vy > 0 ? -1 : 1)) {
-						ArrayList<BoundingBox> list = new ArrayList<BoundingBox>();
-						world.getTile(x, y).addBoundingBoxesToList(world, x, y, list);
-						for(BoundingBox box : list) {
+						boxes.clear();
+						world.getTile(x, y).addBoundingBoxesToList(world, x, y, boxes);
+						for(BoundingBox box : boxes) {
 							if(box != null && box.intersects(newBoundingBox)) {
 								oldMY = my;
-								if(my < 0) {
-									my += Math.max(-my, Math.min(Tile.SIZE, newBoundingBox.minY - box.maxY));
-									if(my != oldMY) {
-										collisionY = true;
-									}
-								} else if(my > 0) {
-									my -= Math.min(my, Math.min(Tile.SIZE, newBoundingBox.maxY - box.minY));
-									if(my != oldMY) {
-										collisionY = true;
-									}
+								my = collideY(newBoundingBox, box, my);
+								if(my != oldMY) {
+									collisionY = true;
+									onCollide(x, y);
+									world.getTile(x, y).onCollide(world, x, y, this);
 								}
 							}
 						}
 					}
 				}
-				done = true;
+				List<Entity> entities = world.getEntitiesInRange(getCenterX(), getCenterY(), Math.max(sizeX, sizeY));
+				entities.remove(this);
+				for(Entity entity : entities) {
+					if(entity.boundingBox != null && entity.boundingBox.intersects(newBoundingBox)) {
+						onCollide(entity);
+						entity.onCollide(this);
+						/*oldMY = my;
+						my = collideY(newBoundingBox, entity.boundingBox, my);
+						if(my != oldMY) {
+							collisionY = true;
+							onCollide(entity);
+							entity.onCollide(this);
+						}*/
+					}
+				}
 			}
 			vy = my;
 		}
+	}
+	
+	public double collideY(BoundingBox box1, BoundingBox box2, double my) {
+		if(my < 0) {
+			my += Math.max(-my, Math.min(Tile.SIZE, box1.minY - box2.maxY));
+		} else if(my > 0) {
+			my -= Math.min(my, Math.min(Tile.SIZE, box1.maxY - box2.minY));
+		}
+		return my;
+	}
+	
+	public void onCollide(Entity entity) {
+		
+	}
+	
+	public void onCollide(int x, int y) {
+		
 	}
 
 	public void render() {
@@ -212,7 +259,7 @@ public class Entity {
 		GL11.glVertex2d(-world.offsetX + x, -world.offsetY + y + sizeY);
 		GL11.glEnd();
 
-		if(SplitMan.DEBUG) {
+		if(Settings.getDebugOption("entityMovement")) {
 			GL11.glColor4f(0.75F, 0.0F, 0.75F, 1.0F);
 			GL11.glBegin(GL11.GL_QUADS);
 			GL11.glVertex2d(-world.offsetX + x + vx, -world.offsetY + y + vy);
@@ -252,5 +299,23 @@ public class Entity {
 		double length = getSpeed();
 		vx = Math.cos(angle) * length;
 		vy = Math.sin(angle) * length;
+	}
+	
+	public double getCenterX() {
+		return x + sizeX / 2;
+	}
+	
+	public double getCenterY() {
+		return y + sizeY / 2;
+	}
+	
+	public double getDistance(double x, double y) {
+		double deltaX = this.x - x;
+		double deltaY = this.y - y;
+		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+	}
+	
+	public double getDistance(Entity entity) {
+		return getDistance(entity.x + entity.sizeX / 2, entity.y + entity.sizeY / 2);
 	}
 }

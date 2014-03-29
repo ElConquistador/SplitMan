@@ -1,5 +1,6 @@
 package elcon.games.splitman.gui;
 
+import elcon.games.splitman.Resources;
 import elcon.games.splitman.entities.EntityPlayer;
 import elcon.games.splitman.tiles.Tile;
 import elcon.games.splitman.world.World;
@@ -14,16 +15,18 @@ public class GuiGame extends GuiScreen {
 		for(int i = 0; i < world.sizeX; i++) {
 			for(int j = 0; j < world.sizeY; j++) {
 				if(i == 0 || i == world.sizeX - 1 || j == 0 || j == world.sizeY - 1) {
-					world.setTileAndMetadata(i, j, Tile.test, world.random.nextInt(2));
+					world.setTile(i, j, Tile.color);
 				}
 			}
 		}
-		world.setTileAndMetadata(16, 16, Tile.test, 0);
-		world.setTileAndMetadata(17, 16, Tile.test, 1);
-		world.setTileAndMetadata(18, 16, Tile.test, 0);
-		world.setTileAndMetadata(19, 16, Tile.test, 1);
-		world.setTileAndMetadata(20, 16, Tile.test, 0);
-		world.addPlayer(new EntityPlayer(world, 64, 64, 0));
+		world.setTileAndMetadata(14, 28, Tile.colorPlayer, 1);
+		world.setTileAndMetadata(15, 28, Tile.colorPlayer, 1);
+		world.setTileAndMetadata(16, 28, Tile.colorPlayer, 2);
+		world.setTileAndMetadata(17, 28, Tile.colorPlayer, 2);
+		world.setTileAndMetadata(19, 28, Tile.colorPlayer, 3);
+		world.setTileAndMetadata(20, 28, Tile.colorPlayer, 3);
+		world.setTileAndMetadata(18, 31, Tile.splitter, (1 + world.random.nextInt(Resources.colors.length - 1)) * 2);
+		world.addPlayer(new EntityPlayer(world, 64, 64, 0).setControlled());
 	}
 
 	@Override

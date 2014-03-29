@@ -9,6 +9,7 @@ import org.lwjgl.input.Keyboard;
 import elcon.games.splitman.SplitMan;
 import elcon.games.splitman.entities.Entity;
 import elcon.games.splitman.entities.EntityPlayer;
+import elcon.games.splitman.settings.Settings;
 import elcon.games.splitman.tiles.Tile;
 import elcon.games.splitman.util.BoundingBox;
 
@@ -27,9 +28,15 @@ public class World {
 	public int tileUpdates = -1;
 	
 	public ArrayList<Entity> entities = new ArrayList<Entity>();
+	public ArrayList<Entity> newEntities = new ArrayList<Entity>();
 	public ArrayList<Entity> unloadedEntities = new ArrayList<Entity>();
 	
 	public ArrayList<EntityPlayer> players = new ArrayList<EntityPlayer>();
+	
+	public int currentPlayerIndex = 0;
+	public int playerSwitchTime = 0;
+	public int nextPlayerSwitchTime = 600 + random.nextInt(1200);
+	public int playerNoMoveTime = 0;
 	
 	public void update(int tick) {
 		if(tileUpdates > 0) {
@@ -52,6 +59,8 @@ public class World {
 		}
 		entities.removeAll(unloadedEntities);
 		unloadedEntities.clear();
+		entities.addAll(newEntities);
+		newEntities.clear();
 		if(tick == 30) {
 			entities.trimToSize();
 		}
@@ -60,19 +69,46 @@ public class World {
 				if(entity.isDead) {
 					removeEntity(entity);
 				} else {
-					entity.update();
+					entity.update(tick);
 				}
 			}
 		}
-		if(Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
-			setOffsetX(offsetX - 8);
-		} else if(Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-			setOffsetX(offsetX + 8);
+		playerNoMoveTime++;
+		playerSwitchTime++;
+		if(playerNoMoveTime >= 300 || playerSwitchTime >= nextPlayerSwitchTime) {
+			playerNoMoveTime = 0;
+			playerSwitchTime = 0;
+			nextPlayerSwitchTime = 600 + random.nextInt(1200);
+			if(players.size() > 1) {
+				players.get(currentPlayerIndex).setUncontrolled();
+				int playerIndex = random.nextInt(players.size());
+				if(playerIndex == currentPlayerIndex) {
+					if(playerIndex == players.size() - 1) {
+						playerIndex--;
+					} else {
+						playerIndex++;
+					}
+				}
+				currentPlayerIndex = playerIndex;
+				players.get(currentPlayerIndex).setControlled();
+			} else {
+				
+			}
 		}
-		if(Keyboard.isKeyDown(Keyboard.KEY_UP)) {
-			setOffsetY(offsetY - 8);
-		} else if(Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
-			setOffsetY(offsetY + 8);
+		if(Settings.getDebugOption("cameraMovement")) {
+			if(Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
+				setOffsetX(offsetX - 8);
+			} else if(Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
+				setOffsetX(offsetX + 8);
+			}
+			if(Keyboard.isKeyDown(Keyboard.KEY_UP)) {
+				setOffsetY(offsetY - 8);
+			} else if(Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
+				setOffsetY(offsetY + 8);
+			}
+		} else {
+			setOffsetX((int) players.get(currentPlayerIndex).x - SplitMan.WIDTH / 2);
+			setOffsetY((int) players.get(currentPlayerIndex).y - SplitMan.HEIGHT / 2);
 		}
 	}
 	
@@ -163,12 +199,36 @@ public class World {
 		setTileMetadata(x, y, tileMeta);
 	}
 	
+	public List<Entity> getEntitiesInRange(double x, double y, double radius) {
+		ArrayList<Entity> list = new ArrayList<Entity>();
+		for(Entity entity : entities) {
+			if(entity != null && !entity.isDead && entity.getDistance(x, y) <= radius) {
+				list.add(entity);
+			}
+		}
+		return list;
+	}
+	
+	public List<BoundingBox> getEntityBoundingBoxesInRange(double x, double y, double radius) {
+		ArrayList<BoundingBox> list = new ArrayList<BoundingBox>();
+		for(Entity entity : entities) {
+			if(entity != null && !entity.isDead && entity.getDistance(x, y) <= radius) {
+				list.add(entity.boundingBox);
+			}
+		}
+		return list;
+	}
+	
 	public void addEntity(Entity entity) {
-		entities.add(entity);
+		newEntities.add(entity);
 	}
 	
 	public void removeEntity(Entity entity) {
 		unloadedEntities.add(entity);
+	}
+	
+	public EntityPlayer getPlayer() {
+		return players.get(currentPlayerIndex);
 	}
 	
 	public void addPlayer(EntityPlayer player) {

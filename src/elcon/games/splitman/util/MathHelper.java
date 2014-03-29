@@ -36,7 +36,7 @@ public class MathHelper {
 		return min + Math.random() * (max - min);
 	}
 
-	public static double randomInt(double min, double max) {
-		return Math.floor(min + Math.random() * (max - min + 1));
+	public static int randomInt(double min, double max) {
+		return (int) Math.floor(min + Math.random() * (max - min + 1));
 	}
 }
