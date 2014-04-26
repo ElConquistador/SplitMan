@@ -116,6 +116,7 @@ public class SplitMan implements Runnable {
 	}
 	
 	public static void main(String[] args) {
+		//TODO: extract natives
 		instance = new SplitMan();
 		instance.run();
 	}

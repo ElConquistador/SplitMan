@@ -23,6 +23,22 @@ public class Util {
 		return "";
 	}
 	
+	public static String getOS() {
+		String fullName = System.getProperty("os.name").toLowerCase();
+		if(fullName.startsWith("windows")) {
+			return "windows";
+		} else if(fullName.startsWith("mac")) {
+			return "macosx";
+		} else if(fullName.startsWith("linux")) {
+			return "linux";
+		} else if(fullName.startsWith("sun") || fullName.startsWith("solaris")) {
+			return "solaris";
+		} else if(fullName.startsWith("freebsd")) {
+			return "freebsd";
+		}
+		return "unknown";
+	}
+	
 	public static void color(int color) {
 		float r = ((color >> 16) & 0xFF) * 255.0F;
 		float g = ((color >> 8) & 0xFF) * 255.0F;
