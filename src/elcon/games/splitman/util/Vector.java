@@ -1,10 +1,13 @@
 package elcon.games.splitman.util;
 
-
 public class Vector {
 
-	private double x;
-	private double y;
+	public double x;
+	public double y;
+	
+	public Vector() {
+		
+	}
 
 	public Vector(double x, double y) {
 		this.x = x;
@@ -54,11 +57,11 @@ public class Vector {
 	}
 
 	public Vector add(Vector vector) {
-		return new Vector(x + vector.getX(), y + vector.getY());
+		return new Vector(x + vector.x, y + vector.y);
 	}
 
 	public Vector subtract(Vector vector) {
-		return new Vector(x - vector.getX(), y - vector.getY());
+		return new Vector(x - vector.x, y - vector.y);
 	}
 
 	public Vector multiply(double value) {
@@ -70,13 +73,13 @@ public class Vector {
 	}
 
 	public void addTo(Vector vector) {
-		x += vector.getX();
-		y += vector.getY();
+		x += vector.x;
+		y += vector.y;
 	}
 
 	public void subtractFrom(Vector vector) {
-		x -= vector.getX();
-		y -= vector.getY();
+		x -= vector.x;
+		y -= vector.x;
 	}
 
 	public void multiplyBy(double value) {
@@ -87,6 +90,32 @@ public class Vector {
 	public void divideBy(double value) {
 		x /= value;
 		y /= value;
+	}
+	
+	public double dot(Vector vector) {
+		return x * vector.x + y * vector.y;
+	}
+	
+	public void min(Vector vector) {
+		x = Math.min(x, vector.x);
+		y = Math.min(y, vector.y);
+	}
+	
+	public void max(Vector vector) {
+		x = Math.max(x, vector.x);
+		y = Math.max(y, vector.y);
+	}
+	
+	public boolean lessThan(Vector vector) {
+		return x < vector.x || y < vector.y;
+	}
+	
+	public boolean greaterThan(Vector vector) {
+		return x > vector.x || y > vector.y;
+	}
+	
+	public Vector copy() {
+		return new Vector(x, y);
 	}
 
 	@Override
@@ -100,6 +129,6 @@ public class Vector {
 			return false;
 		}
 		Vector vector = (Vector) obj;
-		return x == vector.getX() && y == vector.getY();
+		return x == vector.x && y == vector.y;
 	}
 }
