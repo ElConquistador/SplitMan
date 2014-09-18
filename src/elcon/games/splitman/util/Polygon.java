@@ -85,8 +85,17 @@ public class Polygon {
 	}
 	
 	public boolean contains(Vector vector) {
-		//TODO
-		return false;
+		if(vector.x > max.x || vector.x < min.x || vector.y > max.y || vector.y < min.y) {
+			return false;
+		}
+		Edge ray = new Edge(vector, new Vector(min.x - 1, min.y - 1));
+		int intersections = 0;
+		for(Edge edge : edges) {
+			if(ray.intersects(edge, true)) {
+				intersections++;
+			}
+		}
+		return (intersections % 2) == 1;
 	}
 	
 	public boolean collides(Polygon polygon) {
