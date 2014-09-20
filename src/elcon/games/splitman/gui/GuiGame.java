@@ -26,6 +26,10 @@ public class GuiGame extends GuiScreen {
 		world.setTileAndMetadata(19, 28, Tile.colorPlayer, 3);
 		world.setTileAndMetadata(20, 28, Tile.colorPlayer, 3);
 		world.setTileAndMetadata(18, 31, Tile.splitter, (1 + world.random.nextInt(Resources.colors.length - 1)) * 2);
+		world.setTileAndMetadata(24, 31, Tile.bounce, 0);
+		world.setTileAndMetadata(25, 31, Tile.bounce, 0);
+		world.setTileAndMetadata(22, 26, Tile.color, 0);
+		world.setTileAndMetadata(23, 26, Tile.color, 0);
 		world.addPlayer(new EntityPlayer(world, 64, 64, 0).setControlled());
 	}
 

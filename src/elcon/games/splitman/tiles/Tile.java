@@ -21,6 +21,7 @@ public class Tile {
 	public static Tile color = new TileColor(1, "color");
 	public static Tile splitter = new TileSplitter(2, "splitter");
 	public static Tile colorPlayer = new TileColorPlayer(3, "colorPlayer");
+	public static Tile bounce = new TileBounce(4, "bounce");
 
 	public byte id;
 	public String name;

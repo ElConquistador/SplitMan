@@ -18,6 +18,9 @@ public class Entity {
 	public double y;
 	public double vx;
 	public double vy;
+	public double ax;
+	public double ay;
+	public double friction;
 	public double gravity;
 
 	public double speed = 1.0;
@@ -42,6 +45,8 @@ public class Entity {
 		this(world);
 		this.x = x;
 		this.y = y;
+		ax = 0;
+		ay = 0;
 		gravity = 4;
 		boundingBox = new BoundingBox(x, x + sizeX, y, y + sizeY);
 	}
@@ -53,6 +58,16 @@ public class Entity {
 	}
 
 	public void update(int tick) {
+		vx += ax;
+		vy += ay;
+		ax *= friction;
+		ay *= friction;
+		if(ax < 0.01) {
+			ax = 0;
+		}
+		if(ay < 0.01) {
+			ay = 0;
+		}
 		vy += gravity;
 		isFalling = vy > 0;
 		
