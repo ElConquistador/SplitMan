@@ -96,6 +96,12 @@ public class Vector {
 		return x * vector.x + y * vector.y;
 	}
 	
+	public double getDistance(Vector vector) {
+		double dx = vector.x - x;
+		double dy = vector.y - y;
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+	
 	public void min(Vector vector) {
 		x = Math.min(x, vector.x);
 		y = Math.min(y, vector.y);

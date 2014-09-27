@@ -19,6 +19,20 @@ public class Edge {
 		return Double.POSITIVE_INFINITY;
 	}
 	
+	public boolean contains(Vector vector) {
+		double dx = end.x - start.x;
+		double dy = end.y - start.y;
+		if(dx == 0) {
+			return vector.x == start.x && vector.y >= start.y && vector.y < end.y;
+		} else if(dy == 0) {
+			return vector.y == start.y && vector.x >= start.x && vector.x < end.x;
+		} else {
+			double a = dy / dx;
+			double b = start.y - a * start.x;
+			return vector.y - (a * vector.y + b) < 0.001;
+		}
+	}
+	
 	public boolean intersects(Edge other) {
 		return intersects(other, false);
 	}

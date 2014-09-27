@@ -12,7 +12,7 @@ public class Settings {
 	static {
 		debugOptions.put("entityMovement", false);
 		debugOptions.put("playerMovement", false);
-		debugOptions.put("cameraMovement", false);
+		debugOptions.put("cameraMovement", true);
 	}
 
 	public static KeyBinding moveLeft = new KeyBinding("moveLeft", Keyboard.KEY_A);
